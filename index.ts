@@ -1,10 +1,13 @@
 // const redux = require("redux");
 // const produce = require("immer").produce; //immutable state management
+// const reduxLogger = require("redux-logger");
+
+// const applyMiddleware = redux.applyMiddleware;
+// const logger = reduxLogger.createLogger();
 
 // const createStore = redux.createStore;
 // const bindActionCreators = redux.bindActionCreators;
 // const combineReducers = redux.combineReducers;
-
 
 // const CAKE_OREDERED = "CAKE_ORDERED";
 // const RESTOCK_CAKE = "RESTOCK_CAKE";
@@ -12,7 +15,7 @@
 // const RESTOCK_ICECREAM = "RESTOCK_ICECREAM";
 // const INCREMENT_NUMBER = "INCREMENT_NUMBER";
 // const DECREMENT_NUMBER = "DECREMENT_NUMBER";
-// const UPDATE_USER = "UPDATE_USER";  
+// const UPDATE_USER = "UPDATE_USER";
 
 // //orderCake is an action creator that returns an action
 // function orderCake() {
@@ -58,10 +61,10 @@
 //   };
 // }
 
-// function updateUser(){
+// function updateUser() {
 //   return {
 //     type: UPDATE_USER,
-//   }
+//   };
 // }
 
 // //current state of the application  is 10
@@ -81,12 +84,12 @@
 //   user: {
 //     name: "John",
 //     age: 25,
-//     address:{
+//     address: {
 //       city: "New York",
-//       country: "USA"
-//     }
+//       country: "USA",
+//     },
 //   },
-// }
+// };
 
 // //reducer function that takes the current state and action as arguments and returns the new state
 // const cakeReducer = (state = initialCakeState, action: any) => {
@@ -136,36 +139,44 @@
 //   }
 // };
 
-// const userReducer = (state = initialUserState, action: any)=>{
-//   switch(action.type){
+// const userReducer = (state = initialUserState, action: any) => {
+//   switch (action.type) {
 //     case UPDATE_USER:
-//       return produce(state, (d)=>{
+//       return produce(state, (d) => {
 //         d.user.name = "Jane";
-//         d.user.address.city = "San Francisco";	
-//       })
-//       default:
-//         return state;
+//         d.user.address.city = "San Francisco";
+//       });
+//     default:
+//       return state;
 //   }
-// }
+// };
 
 // //accepts reducer as an argument and returns a store
 // const rootReducer = combineReducers({
 //   cake: cakeReducer,
 //   iceCream: iceCreamReducers,
-//   counter: numberReducers, 
-//   user: userReducer
+//   counter: numberReducers,
+//   user: userReducer,
 // });
-// const store = createStore(rootReducer);
+// const store = createStore(rootReducer, applyMiddleware(logger));
 
 // //log the initial state of the store
 // console.log("Initial State:", store.getState());
 
 // //subscribe to the store to listen to the state changes
-// const unsubscribe = store.subscribe(() =>
-//   console.log("Updated State:", store.getState())
-// );
+// // const unsubscribe = store.subscribe(() =>
+// //   console.log("Updated State:", store.getState())
+// // );
+
 // const actions = bindActionCreators(
-//   { orderCake, restockCake, orderIceCream, incrementNumber, decrementNumber, updateUser  },
+//   {
+//     orderCake,
+//     restockCake,
+//     orderIceCream,
+//     incrementNumber,
+//     decrementNumber,
+//     updateUser,
+//   },
 //   store.dispatch
 // );
 
@@ -194,7 +205,7 @@
 // // store.dispatch(restockCake(10));
 
 // //unsubscribe to the store
-// unsubscribe();
+// // unsubscribe();
 // // store.dispatch(orderCake());
 // // store.dispatch(orderCake());
 // // store.dispatch(orderCake());
