@@ -1,130 +1,83 @@
 const redux = require("redux");
-const produce = require("immer").produce;
+const { thunk } = require("redux-thunk");
+const axios = require("axios");
+const createStore = redux.createStore;
+const applyMiddleware = redux.applyMiddleware;
 
-const bindActionCreators = redux.bindActionCreators;
-const combineReducers = redux.combineReducers;
-
-//actions
-const ORDER_LUMPIA = "ORDER_LUMPIA";
-const RESTOCK_LUMPIA = "RESTOCK_LUMPIA";
-
-const UPDATE_USER = "UPDATE_USER";
-const UPDATE_USER_STREET = "UPDATE_USER_STREET";
-
-// action creators
-function orderLumpia(quantity: number) {
-  return {
-    type: ORDER_LUMPIA,
-    payload: quantity,
-  };
-}
-
-function restockLumpia(quantity) {
-  return {
-    type: RESTOCK_LUMPIA,
-    payload: quantity,
-  };
-}
-
-function updateUser(city: string) {
-  return {
-    type: UPDATE_USER,
-    payload: city,
-  };
-}
-
-function updateUserStreet(street: string) {
-  return {
-    type: UPDATE_USER_STREET,
-    payload: street,
-  };
-}
-
-// initial state
-const initialLumpiaState = {
-  lumpiaCount: 10,
+const initialState = {
+  loading: false,
+  users: [],
+  error: "",
 };
 
-const initialUserState = {
-  name: "John Doe",
-  age: 23,
-  address: {
-    city: "Manila",
-    street: "1234",
-  },
+const FETCH_USERS_REQUEST = "FETCH_USERS_REQUEST";
+const FETCH_USERS_SUCCESS = "FETCH_USERS_SUCCESS";
+const FETCH_USERS_FAILURE = "FETCH_USERS_FAILURE";
+
+const fetchUsersRequest = () => {
+  return {
+    type: FETCH_USERS_REQUEST,
+  };
 };
 
-type ACTION_TYPE = {
-  type: string;
-  payload: number;
+const fetchUsersSuccess = (users: any) => {
+  return {
+    type: FETCH_USERS_SUCCESS,
+    payload: users,
+  };
 };
 
-type ACTION_TYPE_USER = {
-  type: string;
-  payload: string;
+const fetchUsersFailed = (error: any) => {
+  return {
+    type: FETCH_USERS_FAILURE,
+    payload: error,
+  };
 };
 
-const lumpiaReducer = (state = initialLumpiaState, action: ACTION_TYPE) => {
+const userReducer = (state = initialState, action: any) => {
   switch (action.type) {
-    case ORDER_LUMPIA:
+    case FETCH_USERS_REQUEST:
       return {
         ...state,
-        lumpiaCount: state.lumpiaCount - action.payload,
+        loading: true,
       };
-    case RESTOCK_LUMPIA:
+    case FETCH_USERS_SUCCESS:
       return {
         ...state,
-        lumpiaCount: state.lumpiaCount + action.payload,
+        loading: true,
+        users: action.payload,
+        error: "",
+      };
+    case FETCH_USERS_FAILURE:
+      return {
+        ...state,
+        loading: false,
+        users: [],
+        error: action.payload,
       };
     default:
       return state;
   }
 };
 
-const userReducer = (state = initialUserState, action: ACTION_TYPE_USER) => {
-  switch (action.type) {
-    case UPDATE_USER:
-      // return {
-      //   ...state,
-      //   address: {
-      //     ...state.address,
-      //     city: action.payload,
-      //   },
-      // };
-
-      // use of immer
-      return produce(state, (draft: any) => {
-        draft.address.city = action.payload;
+const getAllUsers = () => {
+  return function (dispatch: any) {
+    dispatch(fetchUsersRequest());
+    axios
+      .get("https://jsonplaceholder.typicode.com/users")
+      .then((res: any) => {
+        const data = res.data;
+        dispatch(fetchUsersSuccess(data));
+      })
+      .catch((error: any) => {
+        dispatch(fetchUsersFailed(error.message));
       });
-    case UPDATE_USER_STREET:
-      return produce(state, (draft) => {
-        draft.address.street = action.payload;
-      });
-    default:
-      return state;
-  }
+  };
 };
 
-const rootReducers = combineReducers({
-  lumpia: lumpiaReducer,
-  user: userReducer,
+const store = createStore(userReducer, applyMiddleware(thunk));
+store.subscribe(() => {
+  console.log(store.getState());
 });
 
-const store = redux.createStore(rootReducers);
-
-console.log("Initial State:", store.getState());
-
-const actions = bindActionCreators(
-  { orderLumpia, restockLumpia, updateUser, updateUserStreet },
-  store.dispatch
-);
-
-const unsubscribe = store.subscribe(() =>
-  console.log("Updated State: ", store.getState())
-);
-
-actions.orderLumpia(2);
-actions.orderLumpia(3);
-actions.restockLumpia(10);
-actions.updateUser("Taguig");
-actions.updateUserStreet("Arago Street");
+store.dispatch(getAllUsers());
